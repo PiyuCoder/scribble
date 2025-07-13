@@ -84,7 +84,7 @@ const Lobby = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-100 via-yellow-50 to-purple-100 text-gray-800 p-6">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br overscroll-none from-blue-100 via-yellow-50 to-purple-100 text-gray-800 p-6">
       <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md text-center">
         <h2 className="text-3xl font-bold text-purple-600 mb-4">
           Lobby: {gameState.roomId}

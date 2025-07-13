@@ -74,7 +74,7 @@ function Home() {
   };
 
   return (
-    <div className=" w-screen flex flex-col items-center justify-center h-screen gap-8 ">
+    <div className=" w-screen flex flex-col items-center justify-center h-screen gap-8 overscroll-none">
       <p className="font-mono text-[2rem] animate-bounce font-bold tracking-[20px] ps-[30px] text-center justify-center">
         SCRIBBLE
       </p>

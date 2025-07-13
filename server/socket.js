@@ -66,6 +66,8 @@ const socketController = (io) => {
       message: "Next turn started",
     });
 
+    io.to(roomId).emit("clearCanvas");
+
     startGameTimer(io, roomId);
   };
 

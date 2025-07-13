@@ -213,7 +213,7 @@ const Game = () => {
   }, [isScribbler]);
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-gradient-to-br from-blue-100 via-yellow-50 to-purple-100">
+    <div className="flex flex-col h-screen w-screen bg-gradient-to-br from-blue-100 overscroll-none via-yellow-50 to-purple-100">
       {/* Top Bar */}
       <div className="flex flex-wrap justify-between items-center p-4 bg-white shadow-md">
         <div className="text-xl font-bold text-purple-700">
@@ -270,6 +270,7 @@ const Game = () => {
               onMouseUp={endDraw}
               onMouseLeave={endDraw}
               onTouchStart={(e) => {
+                e.preventDefault();
                 const touch = e.touches[0];
                 startDraw({
                   clientX: touch.clientX,
@@ -277,6 +278,7 @@ const Game = () => {
                 } as any);
               }}
               onTouchMove={(e) => {
+                e.preventDefault();
                 const touch = e.touches[0];
                 handleDraw({
                   clientX: touch.clientX,
