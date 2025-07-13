@@ -16,7 +16,7 @@ const Game = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const [color, setColor] = useState("#000000");
-  const [isErasing, setIsErasing] = useState(false);
+  // const [isErasing, setIsErasing] = useState(false);
   const drawing = useRef(false);
   const socketId = socket.id;
   const currentScribbler = gameState.players?.[gameState.turnIndex || 0];
@@ -46,12 +46,12 @@ const Game = () => {
 
   const handleColorChange = (newColor: string) => {
     setColor(newColor);
-    setIsErasing(false);
+    // setIsErasing(false);
   };
 
-  const toggleEraser = () => {
-    setIsErasing((prev) => !prev);
-  };
+  // const toggleEraser = () => {
+  //   setIsErasing((prev) => !prev);
+  // };
 
   useEffect(() => {
     socket.on(

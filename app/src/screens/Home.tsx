@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import { socket } from "../socket";
 import { useNavigate } from "react-router-dom";
 import { generateRoomId } from "../helpers/room";

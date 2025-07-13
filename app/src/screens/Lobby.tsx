@@ -1,8 +1,7 @@
-import React, { useEffect } from "react";
-import { useLoader } from "../context/LoaderContext";
+import { useEffect } from "react";
 import { socket } from "../socket";
 import { useGame, type Player } from "../context/GameContext";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export type EnterGameResponse = {
   success: boolean;
@@ -97,7 +96,7 @@ const Lobby = () => {
         <div className="mb-6">
           <h3 className="text-xl font-semibold mb-2 text-blue-500">Players</h3>
           <ul className="space-y-2">
-            {gameState?.players?.map((player, index) => (
+            {gameState?.players?.map((player) => (
               <li
                 key={player.id}
                 className="bg-blue-50 border border-blue-200 px-4 py-2 rounded-full text-blue-700 font-medium shadow-sm"
