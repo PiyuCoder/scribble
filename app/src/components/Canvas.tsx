@@ -31,11 +31,7 @@ const Canvas = ({
     if (!canvas || !ctx) return;
 
     socket.on("gameStarted", () => {
-      const canvas = canvasRef.current;
-      const ctx = ctxRef.current;
-      if (canvas && ctx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
+      clearCanvas();
     });
 
     socket.on("startDraw", ({ x, y, color }: DrawData) => {

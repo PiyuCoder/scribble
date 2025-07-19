@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { socket } from "../socket";
 import { useGame, type Player } from "../context/GameContext";
 import { useNavigate } from "react-router-dom";
+import { useLoader } from "../context/LoaderContext";
 
 export type EnterGameResponse = {
   success: boolean;
@@ -19,13 +20,15 @@ type LobbyResponse = {
 };
 
 const Lobby = () => {
-  //   const { showLoader, hideLoader } = useLoader();
+  const { showLoader, hideLoader, loading } = useLoader();
   const { gameState, setGameState } = useGame();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (!gameState.roomId) return;
+  console.log(loading);
 
+  useEffect(() => {
+    showLoader();
+    if (!gameState.roomId) return;
     // 👇 Emit joinLobby for everyone — even the creator
     socket.emit("joinLobby", { roomId: gameState.roomId });
 
@@ -39,6 +42,7 @@ const Lobby = () => {
           players: response.players,
           gameStatus: "waiting",
         }));
+        hideLoader();
       }
     });
 
@@ -62,15 +66,22 @@ const Lobby = () => {
 
   useEffect(() => {
     const handleGameStarted = (response: EnterGameResponse) => {
-      console.log("Received gameStarted:", response);
+      showLoader();
       if (response.success) {
         setGameState((prev) => ({
           ...prev,
+          players: prev?.players?.map((player) => {
+            const updatedScore =
+              response?.scores?.find((p) => p.id === player.id)?.score ??
+              player.score;
+            return { ...player, score: updatedScore };
+          }),
           gameStatus: "playing",
           round: 1,
           turnIndex: response?.turnIndex,
           word: response?.word || "",
         }));
+        hideLoader();
         navigate("/game");
       } else {
         console.error("Failed to start game:", response.message);
@@ -116,6 +127,7 @@ const Lobby = () => {
         {gameState?.players?.length > 0 &&
           gameState?.players[0]?.id === socket?.id && (
             <button
+              disabled={gameState?.players?.length < 2}
               onClick={enterGame}
               className="w-full py-3 px-6 bg-gradient-to-r from-blue-500 via-purple-500 to-yellow-400 text-white font-bold rounded-full shadow-md transition-all duration-300 hover:scale-105"
             >

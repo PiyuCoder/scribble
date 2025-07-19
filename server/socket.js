@@ -157,12 +157,20 @@ const socketController = (io) => {
         round: 1,
       };
 
+      const players = room[roomId];
+
+      const scores = players.map((player) => ({
+        id: player.id,
+        score: player.score || 0,
+      }));
+
       io.to(roomId).emit("gameStarted", {
         success: true,
         word,
         turnIndex: 0, // corrected `tunIndex` typo
         round: 1,
         message: "Game is starting",
+        scores,
       });
 
       startGameTimer(io, roomId);
