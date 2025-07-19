@@ -9,6 +9,7 @@ export type EnterGameResponse = {
   round: number;
   turnIndex?: number;
   word?: string;
+  scores?: { id: string; score: number }[];
 };
 
 type LobbyResponse = {

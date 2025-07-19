@@ -19,10 +19,13 @@ const socketController = (io) => {
   }
 
   const startGameTimer = (io, roomId) => {
+    io.to(roomId).emit("clearCanvas");
     let timeLeft = 60;
 
-    // Clear previous timer if any
-    if (timers[roomId]) clearInterval(timers[roomId]);
+    if (timers[roomId]) {
+      clearInterval(timers[roomId]);
+      delete timers[roomId];
+    }
 
     timers[roomId] = setInterval(() => {
       timeLeft--;
@@ -31,12 +34,25 @@ const socketController = (io) => {
 
       if (timeLeft <= 0) {
         clearInterval(timers[roomId]);
+        delete timers[roomId];
 
-        io.to(roomId).emit("timeUp", {
+        const players = room[roomId];
+        const gameState = roomGameState[roomId];
+
+        const nextTurnIndex = (gameState.turnIndex + 1) % players.length;
+        const nextPlayer = players[nextTurnIndex];
+
+        io.to(roomId).emit("timeUpModal", {
           message: "Time's up!",
+          nextPlayer: nextPlayer?.name || "Someone",
         });
 
-        moveToNextTurn(io, roomId);
+        setTimeout(() => {
+          io.to(roomId).emit("closeModal", {
+            success: true,
+          });
+          moveToNextTurn(io, roomId);
+        }, 3000);
       }
     }, 1000);
   };
@@ -58,12 +74,18 @@ const socketController = (io) => {
     const newWord = generateRandomWord();
     roomWords[roomId] = newWord;
 
+    const scores = players.map((player) => ({
+      id: player.id,
+      score: player.score || 0,
+    }));
+
     io.to(roomId).emit("gameStarted", {
       success: true,
       word: newWord,
       turnIndex: gameState.turnIndex,
       round: gameState.round,
       message: "Next turn started",
+      scores,
     });
 
     io.to(roomId).emit("clearCanvas");
@@ -151,19 +173,35 @@ const socketController = (io) => {
       const currentPlayer = players?.find((p) => p.id === playerId);
       if (!players || !currentPlayer) return;
 
+      const gameState = roomGameState[roomId] || { turnIndex: 0, round: 1 };
+
       const correctWord = roomWords[roomId];
       const cleanedGuess = guess.trim().toLowerCase();
+
+      const nextTurnIndex = (gameState.turnIndex + 1) % players.length;
+      const nextPlayer = players[nextTurnIndex];
 
       if (cleanedGuess === correctWord?.toLowerCase()) {
         io.to(roomId).emit("wordGuessed", {
           success: true,
           playerName: currentPlayer.name,
           word: correctWord,
+          nextPlayer: nextPlayer?.name || "Someone",
         });
 
         currentPlayer.score = (currentPlayer.score || 0) + 1;
 
-        moveToNextTurn(io, roomId);
+        if (timers[roomId]) {
+          clearInterval(timers[roomId]);
+          delete timers[roomId];
+        }
+
+        setTimeout(() => {
+          io.to(roomId).emit("closeGuessedModal", {
+            success: true,
+          });
+          moveToNextTurn(io, roomId);
+        }, 3000);
       } else {
         socket.broadcast.to(roomId).emit("chatMessage", {
           playerName: currentPlayer.name,
