@@ -30,9 +30,7 @@ const Canvas = ({
     const ctx = ctxRef.current;
     if (!canvas || !ctx) return;
 
-    socket.on("gameStarted", () => {
-      clearCanvas();
-    });
+    clearCanvas();
 
     socket.on("startDraw", ({ x, y, color }: DrawData) => {
       ctx.strokeStyle = color;
