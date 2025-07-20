@@ -24,21 +24,23 @@ const Canvas = ({
   const drawing = useRef(false);
 
   useEffect(() => {
-    if (isScribbler) return;
-
     const canvas = canvasRef.current;
-    const ctx = ctxRef.current;
+    const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
+
+    ctxRef.current = ctx;
 
     clearCanvas();
 
     socket.on("startDraw", ({ x, y, color }: DrawData) => {
+      if (isScribbler) return;
       ctx.strokeStyle = color;
       ctx.beginPath();
       ctx.moveTo(x, y);
     });
 
     socket.on("draw", ({ x, y, color }: DrawData) => {
+      if (isScribbler) return;
       ctx.strokeStyle = color;
       ctx.lineTo(x, y);
       ctx.stroke();

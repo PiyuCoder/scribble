@@ -28,7 +28,10 @@ const Lobby = () => {
 
   useEffect(() => {
     showLoader();
-    if (!gameState.roomId) return;
+    if (!gameState.roomId) {
+      navigate("/");
+      return;
+    }
     // 👇 Emit joinLobby for everyone — even the creator
     socket.emit("joinLobby", { roomId: gameState.roomId });
 
