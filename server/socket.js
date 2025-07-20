@@ -71,7 +71,7 @@ const socketController = (io) => {
 
     roomGameState[roomId] = gameState;
 
-    const newWord = generateRandomWord();
+    const newWord = generateRandomWord().toUpperCase();
     roomWords[roomId] = newWord;
 
     const scores = players.map((player) => ({
@@ -158,7 +158,7 @@ const socketController = (io) => {
         });
       }
 
-      const word = generateRandomWord();
+      const word = generateRandomWord().toUpperCase();
       roomWords[roomId] = word;
       roomGameState[roomId] = {
         turnIndex: 0,
