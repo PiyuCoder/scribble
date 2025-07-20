@@ -20,12 +20,12 @@ function Home() {
   const { setGameState } = useGame();
   const { showLoader, hideLoader } = useLoader();
 
-  const createRoom = (name: string) => {
+  const createRoom = (name: string, avatar?: string) => {
     showLoader();
     socket.connect();
     const roomId = generateRoomId();
-    console.log("Creating room with ID:", roomId, name);
-    socket.emit("createRoom", { roomId, name, isHost: true });
+    console.log("Creating room with ID:", roomId, name, avatar);
+    socket.emit("createRoom", { roomId, name, avatar, isHost: true });
     socket.on("room-created", (response: CreateRoomResponse) => {
       if (response.success) {
         console.log("Room created successfully:", response.roomId);
@@ -43,10 +43,10 @@ function Home() {
     hideLoader();
   };
 
-  const joinRoom = (name: string, roomId?: string) => {
+  const joinRoom = (name: string, roomId?: string, avatar?: string) => {
     showLoader();
     console.log("Joining room with ID:", roomId, name);
-    socket.emit("joinRoom", { roomId, name, isHost: false });
+    socket.emit("joinRoom", { roomId, name, avatar, isHost: false });
     socket.on("player-joined", (response: CreateRoomResponse) => {
       if (response.success) {
         console.log("Joined room successfully:", response.roomId);

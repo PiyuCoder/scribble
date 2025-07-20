@@ -1,9 +1,9 @@
 import io, { Socket } from "socket.io-client";
 
-const prodUrl = "https://scribble-bmrv.onrender.com";
-// const devUrl = "http://localhost:3001";
+const url = "https://scribble-bmrv.onrender.com";
+// const url = "http://localhost:3001";
 
-export const socket: Socket = io(prodUrl, {
+export const socket: Socket = io(url, {
   transports: ["websocket"],
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,

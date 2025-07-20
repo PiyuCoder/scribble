@@ -5,6 +5,7 @@ export type Player = {
   name: string;
   score: number;
   isHost: boolean;
+  avatar?: string;
 };
 
 type GameState = {

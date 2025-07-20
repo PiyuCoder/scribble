@@ -18,6 +18,7 @@ const Canvas = ({
 }) => {
   const [message, setMessage] = useState("");
   const [color, setColor] = useState("#000000");
+  const [showTools, setShowTools] = useState(false);
   const { gameState } = useGame();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -234,55 +235,67 @@ const Canvas = ({
     });
   };
   return (
-    <div className="flex-1 flex flex-col items-center justify-center px-4 py-6 overflow-y-auto">
-      <div className="bg-white border-2 border-gray-400 rounded-md shadow-lg w-full max-w-[600px] h-[300px] sm:h-[400px] mb-6">
+    <div className="relative flex-1 w-full max-w-[640px] mx-auto flex flex-col items-center justify-center px-2 py-4 overflow-hidden">
+      {/* Canvas Area */}
+      <div className="flex-1 w-full aspect-[4/3] bg-white border border-gray-300 rounded-xl shadow-lg overflow-hidden relative">
         <canvas
           ref={canvasRef}
           id="gameCanvas"
-          className="w-full h-full"
+          className="w-full h-full rounded-xl touch-none"
           onMouseDown={startDraw}
           onMouseMove={handleDraw}
           onMouseUp={endDraw}
           onMouseLeave={endDraw}
         />
-        {isScribbler && (
-          <div className="flex gap-2 mt-4">
-            <button
-              onClick={clearCanvas}
-              className="bg-red-500 text-white px-3 py-1 rounded"
-            >
-              Clear
-            </button>
-            {/* <button
-                onClick={toggleEraser}
-                className={`${
-                  isErasing ? "bg-gray-800" : "bg-gray-300"
-                } text-white px-3 py-1 rounded`}
-              >
-                {isErasing ? "Erasing..." : "Eraser"}
-              </button> */}
-            <input
-              type="color"
-              value={color}
-              onChange={(e) => handleColorChange(e.target.value)}
-              className="w-10 h-10 border-2 border-gray-400 rounded-full cursor-pointer"
-            />
-          </div>
-        )}
       </div>
 
+      {/* Floating Toggle Button */}
+      {isScribbler && (
+        <button
+          onClick={() => setShowTools((prev) => !prev)}
+          className="fixed bottom-24 sm:bottom-8 right-6 z-30 bg-purple-600 hover:bg-purple-700 text-white w-12 h-12 rounded-full shadow-md transition"
+          title="Toggle tools"
+        >
+          🎨
+        </button>
+      )}
+
+      {/* Bottom Drawer Tools */}
+      {isScribbler && (
+        <div
+          className={`fixed bottom-0 left-0 right-0 z-20 transition-transform duration-300 ease-in-out ${
+            showTools ? "translate-y-0" : "translate-y-full"
+          } bg-white border-t border-gray-300 shadow-md px-6 py-4 flex justify-between items-center sm:max-w-[640px] sm:mx-auto`}
+        >
+          <button
+            onClick={clearCanvas}
+            className="bg-red-500 text-white px-4 py-2 rounded-lg shadow hover:bg-red-600 transition text-sm"
+          >
+            Clear
+          </button>
+          <input
+            type="color"
+            value={color}
+            onChange={(e) => handleColorChange(e.target.value)}
+            className="w-10 h-10 border border-gray-400 rounded-full cursor-pointer"
+            title="Pick color"
+          />
+        </div>
+      )}
+
+      {/* Guess Input (only if not scribbler) */}
       {!isScribbler && (
-        <div className="flex gap-2 w-full max-w-[600px] px-2">
+        <div className="mt-4 flex w-full max-w-[640px] gap-2 px-2">
           <input
             type="text"
             placeholder="Guess the word..."
-            className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none"
+            className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none shadow-sm text-sm"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
           />
           <button
             onClick={guessWord}
-            className="bg-green-500 text-white px-4 py-2 rounded-lg"
+            className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm shadow hover:bg-green-600 transition"
           >
             Send
           </button>

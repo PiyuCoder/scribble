@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { useGame } from "../context/GameContext";
+import { useGame, type Player } from "../context/GameContext";
 import { socket } from "../socket";
 import type { EnterGameResponse } from "./Lobby";
 import TimeUpModal from "../components/TimeUpModal";
 import Canvas from "../components/Canvas";
 import CorrectGuessModal from "../components/CorrectGuessModal";
+import Avatar from "../components/Avatar";
 
 const Game = () => {
   const { gameState, setGameState } = useGame();
@@ -102,6 +103,20 @@ const Game = () => {
       setNextPlayer("");
     });
 
+    socket.on(
+      "player-left",
+      (response: { playerName: string; players: Player[] }) => {
+        setChatLog((prev) => [
+          ...prev,
+          `[${response.playerName} has left the game]`,
+        ]);
+        setGameState((prev) => ({
+          ...prev,
+          players: response.players,
+        }));
+      }
+    );
+
     return () => {
       socket.off("wordGuessed");
       socket.off("chatMessage");
@@ -117,91 +132,104 @@ const Game = () => {
   }, [chatLog]);
 
   return (
-    <div className="flex flex-col h-screen w-screen bg-gradient-to-br from-blue-100 overscroll-none via-yellow-50 to-purple-100">
-      {/* Top Bar */}
-      <div className="flex flex-wrap justify-between items-center p-4 bg-white shadow-md">
-        <div className="text-xl font-bold text-purple-700">
-          Round {gameState.round || 1}
+    <div className="flex flex-col h-screen w-screen bg-gradient-to-br from-pink-100 via-yellow-50 to-blue-100 text-sm sm:text-base font-[Inter]">
+      {/* 🎮 Top Bar */}
+      <div className="sticky top-0 z-10 flex justify-between items-center px-4 py-2 bg-white/90 backdrop-blur border-b border-gray-300 shadow-sm">
+        <div className="font-bold text-purple-700 tracking-tight">
+          🎯 Round{" "}
+          <span className="text-purple-900">{gameState.round || 1}</span>
         </div>
-        <div className="text-base sm:text-lg font-medium text-gray-600 mt-2 sm:mt-0">
-          {isScribbler ? (
-            <span>
-              Draw:{" "}
-              <span className="font-bold text-green-600">{gameState.word}</span>
+
+        <div className="text-blue-600 font-mono flex items-center gap-1">
+          <span className="h-2 w-2 bg-blue-500 rounded-full animate-ping" />⏱{" "}
+          {gameState.timer || 60}s
+        </div>
+      </div>
+      <div className="flex flex-col items-center text-center">
+        {isScribbler ? (
+          <span className="text-green-600 font-semibold animate-pulse">
+            🎨 Draw: <span className="text-lg">{gameState.word}</span>
+          </span>
+        ) : (
+          <>
+            <span className="text-red-500 italic">🤔 Guess the word!</span>
+            <span className="tracking-widest text-red-600 font-mono text-lg">
+              {gameState?.word
+                ?.split("")
+                .map((char) => (/[a-zA-Z]/.test(char) ? "_" : char))
+                .join(" ")}
             </span>
-          ) : (
-            <div className="flex flex-col items-center">
-              <span className="italic text-red-600 text-center">
-                Guess the word!
-              </span>
-              <span className="italic text-red-600 text-xl tracking-widest text-center">
-                {gameState?.word
-                  ?.split("")
-                  .map((char) => {
-                    return /[a-zA-Z]/.test(char) ? "_" : char;
-                  })
-                  .join(" ")}
-              </span>
+          </>
+        )}
+      </div>
+
+      {/* 🎨 Main Area */}
+      <div className="flex-1 flex flex-col sm:flex-row overflow-hidden">
+        {/* Canvas Area */}
+        <div className="flex-1 flex items-center justify-center px-2 py-3 sm:p-4">
+          <div className="w-full max-w-[650px] bg-white border-[3px] border-dashed border-purple-300 rounded-xl shadow-2xl p-2 sm:p-4 transition-all duration-300">
+            <Canvas
+              isScribbler={isScribbler}
+              socketId={socketId}
+              setChatLog={(msg: string) =>
+                setChatLog((prev) => [...prev, `[You guessed \"${msg}\"]`])
+              }
+            />
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="w-full sm:w-[270px] flex flex-col border-t sm:border-t-0 sm:border-l border-gray-300 bg-white/90 backdrop-blur">
+          {/* 👥 Players */}
+          <div className="p-4 border-b border-gray-200">
+            <h3 className="text-md font-semibold text-purple-700 mb-2">
+              👥 Players
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {gameState.players?.map((player) => (
+                <div
+                  key={player.id}
+                  className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs sm:text-sm shadow-sm whitespace-nowrap font-medium transition ${
+                    player.id === currentScribbler?.id
+                      ? "bg-purple-200 text-purple-900"
+                      : "bg-gray-100 text-gray-800"
+                  }`}
+                >
+                  <Avatar avatarSrc={player.avatar} size="w-4 h-4" />
+                  {player.name} {player.id === currentScribbler?.id && "✏️"}
+                  <span className="ml-1 text-[10px] bg-yellow-100 text-yellow-700 px-2 py-[1px] rounded-full font-semibold">
+                    {player.score}
+                  </span>
+                </div>
+              ))}
             </div>
-          )}
-        </div>
-        <div className="text-base sm:text-lg font-mono text-blue-600 mt-2 sm:mt-0">
-          ⏱ {gameState.timer || 60}s
-        </div>
-      </div>
-
-      {/* Main Area */}
-      <div className="flex flex-col lg:flex-row flex-1 overflow-hidden">
-        {/* Players */}
-        <div className="lg:w-1/5 w-full p-4 bg-white border-b lg:border-b-0 lg:border-r border-gray-300">
-          <h3 className="text-lg font-semibold mb-3 text-purple-600">
-            Players
-          </h3>
-          <div className="gap-2 flex">
-            {gameState.players?.map((player) => (
-              <div
-                key={player.id}
-                className={`p-2 rounded-md shadow-sm text-sm ${
-                  player.id === currentScribbler?.id
-                    ? "bg-purple-200 font-bold"
-                    : "bg-gray-100"
-                }`}
-              >
-                {player.name}
-                {player.id === currentScribbler?.id && " ✏️"}
-                {player.score}
-              </div>
-            ))}
           </div>
-        </div>
 
-        {/* Canvas + Guess */}
-        <Canvas
-          isScribbler={isScribbler}
-          socketId={socketId}
-          setChatLog={(msg: string) =>
-            setChatLog((prev) => [...prev, `[You guessed "${msg}"]`])
-          }
-        />
+          {/* 📨 Chat — kept exactly as you have it */}
+          <div className="flex-1 p-3 flex flex-col min-h-0">
+            <h3 className="text-md font-semibold text-blue-600 mb-2">Chat</h3>
+            <div
+              ref={chatRef}
+              className="h-[100px] overflow-y-auto space-y-2 pr-1 pb-10"
+            >
+              {chatLog.map((msg, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white rounded-lg px-3 py-2 shadow-sm border border-gray-200 text-gray-800 text-sm break-words"
+                >
+                  {msg}
+                </div>
+              ))}
+            </div>
 
-        {/* Chat */}
-        <div className="lg:w-1/5 w-full p-4 bg-white border-t lg:border-t-0 lg:border-l border-gray-300">
-          <h3 className="text-lg font-semibold mb-2 text-blue-600">Chat</h3>
-          <div
-            ref={chatRef}
-            className="h-[100px] sm:h-[300px] overflow-y-auto bg-gray-50 p-2 mb-2 rounded-md"
-          >
-            {chatLog.map((msg, idx) => (
-              <p key={idx} className="text-sm text-gray-700">
-                {msg}
-              </p>
-            ))}
-          </div>
-          <div className="text-sm text-gray-400 italic">
-            {isScribbler ? "You're the artist this round 🎨" : "Keep guessing!"}
+            <div className="mt-2 text-xs italic text-gray-400 text-center">
+              {isScribbler ? "You're the artist this round 🎨" : ""}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* 🎉 Modals */}
       {timeUpModal && <TimeUpModal nextPlayerName={nextPlayer} />}
       {guessedModal && (
         <CorrectGuessModal

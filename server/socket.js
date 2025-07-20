@@ -96,28 +96,36 @@ const socketController = (io) => {
   io.on("connection", (socket) => {
     console.log(`User connected: ${socket.id}`);
 
-    socket.on("createRoom", ({ roomId, name }) => {
+    socket.on("createRoom", ({ roomId, name, avatar }) => {
       if (room[roomId]) {
         socket.emit("roomExists", {
           success: false,
           message: "Room already exists",
         });
       } else {
-        room[roomId] = [{ id: socket.id, name, isHost: true, score: 0 }];
+        room[roomId] = [
+          { id: socket.id, name, avatar, isHost: true, score: 0 },
+        ];
         socket.join(roomId);
         socket.emit("room-created", { success: true, roomId });
         console.log(`Room created: ${roomId}`);
       }
     });
 
-    socket.on("joinRoom", ({ roomId, name }) => {
+    socket.on("joinRoom", ({ roomId, name, avatar }) => {
       if (!room[roomId]) {
         socket.emit("roomNotFound", {
           success: false,
           message: "Room not found",
         });
       } else {
-        room[roomId].push({ id: socket.id, name, isHost: false, score: 0 });
+        room[roomId].push({
+          id: socket.id,
+          name,
+          avatar,
+          isHost: false,
+          score: 0,
+        });
         socket.join(roomId);
         io.to(roomId).emit("player-joined", {
           data: room[roomId],

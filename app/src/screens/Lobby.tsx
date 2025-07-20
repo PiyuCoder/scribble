@@ -3,6 +3,7 @@ import { socket } from "../socket";
 import { useGame, type Player } from "../context/GameContext";
 import { useNavigate } from "react-router-dom";
 import { useLoader } from "../context/LoaderContext";
+import Avatar from "../components/Avatar";
 
 export type EnterGameResponse = {
   success: boolean;
@@ -27,11 +28,12 @@ const Lobby = () => {
   console.log(loading);
 
   useEffect(() => {
-    showLoader();
     if (!gameState.roomId) {
       navigate("/");
       return;
     }
+
+    showLoader();
     // 👇 Emit joinLobby for everyone — even the creator
     socket.emit("joinLobby", { roomId: gameState.roomId });
 
@@ -99,27 +101,38 @@ const Lobby = () => {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br overscroll-none from-blue-100 via-yellow-50 to-purple-100 text-gray-800 p-6">
-      <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md text-center">
-        <h2 className="text-3xl font-bold text-purple-600 mb-4">
-          Lobby: {gameState.roomId}
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-100 via-yellow-50 to-purple-100 text-gray-800 p-6">
+      {/* Lobby Box */}
+      <div className="relative bg-white/30 backdrop-blur-lg shadow-2xl border border-white/20 rounded-3xl px-8 py-10 w-full max-w-md text-center animate-fadeIn">
+        {/* Glowing Outline */}
+        <div className="absolute inset-0 rounded-3xl border-4 border-dashed border-purple-300 animate-pulse pointer-events-none"></div>
+
+        {/* Heading */}
+        <h2 className="text-4xl font-extrabold text-purple-700 drop-shadow mb-3 tracking-wide">
+          🎮 Room: {gameState.roomId}
         </h2>
-        <p className="text-lg text-gray-600 mb-6">
-          Waiting for players to join...
+        <p className="text-base text-gray-700 mb-6 italic">
+          Waiting for friends to join the battlefield...
         </p>
 
+        {/* Players List */}
         <div className="mb-6">
-          <h3 className="text-xl font-semibold mb-2 text-blue-500">Players</h3>
-          <ul className="space-y-2">
-            {gameState?.players?.map((player) => (
+          <h3 className="text-lg font-semibold text-blue-600 mb-2">
+            👥 Players
+          </h3>
+          <ul className="space-y-2 max-h-[200px] overflow-y-auto px-2">
+            {gameState?.players?.map((player, i) => (
               <li
                 key={player.id}
-                className="bg-blue-50 border border-blue-200 px-4 py-2 rounded-full text-blue-700 font-medium shadow-sm"
+                className={`bg-gradient-to-r flex items-center justify-center gap-2 from-white to-blue-50 px-4 py-2 rounded-full text-blue-700 font-semibold shadow-md border border-blue-200 transition transform hover:scale-105 ${
+                  i % 2 === 0 ? "animate-slideInLeft" : "animate-slideInRight"
+                }`}
               >
+                <Avatar avatarSrc={player.avatar} size="w-10 h-10" />
                 {player.name}
                 {player.isHost && (
                   <span className="ml-2 text-sm text-yellow-600 font-semibold">
-                    (Host)
+                    👑 Host
                   </span>
                 )}
               </li>
@@ -127,14 +140,15 @@ const Lobby = () => {
           </ul>
         </div>
 
+        {/* Start Button */}
         {gameState?.players?.length > 0 &&
           gameState?.players[0]?.id === socket?.id && (
             <button
               disabled={gameState?.players?.length < 2}
               onClick={enterGame}
-              className="w-full py-3 px-6 bg-gradient-to-r from-blue-500 via-purple-500 to-yellow-400 text-white font-bold rounded-full shadow-md transition-all duration-300 hover:scale-105"
+              className="w-full py-3 px-6 text-white font-bold rounded-full bg-gradient-to-r from-blue-500 via-purple-500 to-yellow-400 shadow-lg hover:scale-105 hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              🚀 Enter Game
+              🚀 Start Game
             </button>
           )}
       </div>
