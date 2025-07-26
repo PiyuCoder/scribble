@@ -56,7 +56,7 @@ const CreateOrJoinModal: React.FC<CreateOrJoinType> = ({
       className=" fixed inset-0 h-full w-full bg-black bg-opacity-50 flex flex-col items-center gap-6 justify-center"
     >
       <p
-        className=" absolute bottom-4 right-2 text-secondary"
+        className=" absolute bottom-8 right-10 text-secondary cursor-pointer text-white font-bold text-lg"
         onClick={closeModal}
       >
         Back
@@ -71,7 +71,7 @@ const CreateOrJoinModal: React.FC<CreateOrJoinType> = ({
         />
       )}
 
-      <div className="flex overflow-auto ps-40 align-middle justify-center gap-3 w-[90%]  bg-white p-4 rounded-lg">
+      <div className="flex overflow-auto  align-middle justify-start gap-3 w-[60%]  bg-white p-4 rounded-lg">
         {avatarList.map(({ id, src }) => (
           <img
             key={id}
