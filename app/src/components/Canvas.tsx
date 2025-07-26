@@ -157,11 +157,13 @@ const Canvas = ({
 
   const guessWord = () => {
     if (!message.trim()) return;
+    const scribbler = gameState.players?.[gameState.turnIndex || 0];
 
     socket.emit("guessWord", {
       roomId: gameState.roomId,
       guess: message,
       playerId: socketId,
+      scribbler: scribbler.id,
     });
 
     setChatLog(message);
@@ -235,9 +237,13 @@ const Canvas = ({
     });
   };
   return (
-    <div className="relative flex-1 w-full max-w-[640px] mx-auto flex flex-col items-center justify-center px-2 py-4 overflow-hidden">
+    <div
+      className={`relative flex-1 w-full ${
+        isScribbler ? "max-w-[640px]" : "max-h-[380px] sm:h-auto"
+      }  mx-auto flex flex-col items-center justify-center px-2 py-4 overflow-hidden`}
+    >
       {/* Canvas Area */}
-      <div className="flex-1 w-full aspect-[4/3] bg-white border border-gray-300 rounded-xl shadow-lg overflow-hidden relative">
+      <div className="flex-1 w-full px-safe py-safe aspect-[4/3] bg-white border border-gray-300 rounded-xl shadow-lg overflow-hidden relative">
         <canvas
           ref={canvasRef}
           id="gameCanvas"
@@ -253,7 +259,7 @@ const Canvas = ({
       {isScribbler && (
         <button
           onClick={() => setShowTools((prev) => !prev)}
-          className="fixed bottom-24 sm:bottom-8 right-6 z-30 bg-purple-600 hover:bg-purple-700 text-white w-12 h-12 rounded-full shadow-md transition"
+          className="fixed top-32 sm:bottom-8 right-6 z-30 bg-purple-600 hover:bg-purple-700 text-white w-12 h-12 rounded-full shadow-md transition"
           title="Toggle tools"
         >
           🎨
@@ -263,8 +269,8 @@ const Canvas = ({
       {/* Bottom Drawer Tools */}
       {isScribbler && (
         <div
-          className={`fixed bottom-0 left-0 right-0 z-20 transition-transform duration-300 ease-in-out ${
-            showTools ? "translate-y-0" : "translate-y-full"
+          className={`fixed bottom-40 left-0 right-0 z-20 transition-transform duration-300 ease-in-out ${
+            showTools ? "translate-x-0" : "translate-x-full"
           } bg-white border-t border-gray-300 shadow-md px-6 py-4 flex justify-between items-center sm:max-w-[640px] sm:mx-auto`}
         >
           <button

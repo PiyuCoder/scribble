@@ -20,7 +20,7 @@ const socketController = (io) => {
 
   const startGameTimer = (io, roomId) => {
     io.to(roomId).emit("clearCanvas");
-    let timeLeft = 60;
+    let timeLeft = 90;
 
     if (timers[roomId]) {
       clearInterval(timers[roomId]);
@@ -184,9 +184,10 @@ const socketController = (io) => {
       startGameTimer(io, roomId);
     });
 
-    socket.on("guessWord", ({ roomId, guess, playerId }) => {
+    socket.on("guessWord", ({ roomId, guess, playerId, scribbler }) => {
       const players = room[roomId];
       const currentPlayer = players?.find((p) => p.id === playerId);
+      const drawer = players?.find((p) => p.id === scribbler);
       if (!players || !currentPlayer) return;
 
       const gameState = roomGameState[roomId] || { turnIndex: 0, round: 1 };
@@ -206,6 +207,7 @@ const socketController = (io) => {
         });
 
         currentPlayer.score = (currentPlayer.score || 0) + 1;
+        drawer.score = (drawer.score || 0) + 0.5;
 
         if (timers[roomId]) {
           clearInterval(timers[roomId]);
@@ -249,6 +251,19 @@ const socketController = (io) => {
 
     socket.on("clearCanvas", ({ roomId }) => {
       socket.to(roomId).emit("clearCanvas");
+    });
+
+    socket.on("emoji", ({ emoji, sender, roomId }) => {
+      const players = room[roomId];
+      if (!players) return;
+
+      const player = players.find((p) => p.id === sender);
+      if (player) {
+        io.to(roomId).emit("emoji", {
+          emoji,
+          sender,
+        });
+      }
     });
 
     socket.on("disconnect", () => {
